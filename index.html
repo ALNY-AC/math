@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+		<title>math</title>
+		<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+		<style type="text/css">
+			.has-success .form-control {
+				/*background-color: #5cb85c;*/
+			}
+			
+			.has-error .form-control {
+				background-color: #d9534f;
+			}
+			
+			.to-top {
+				position: fixed;
+				top: 80%;
+				right: 0;
+				border: solid 1px #aaa;
+				border-radius: 50%;
+				cursor: pointer;
+			}
+			
+			.to-top a {
+				color: #333;
+			}
+			
+			.to-top span {
+				padding: 5px;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<span id="top">
+		</span>
+		<div class="container">
+			<div class="panel panel-default">
+				<div class="panel-heading">控制台</div>
+				<div class="panel-body" id="tool">
+
+					<div class="form-group">
+						<label>生成范围（只需要填写最大数，比如1到100内的加减法，填写100即可）</label>
+						<input type="text" class="form-control" v-model='max' placeholder="范围">
+					</div>
+					<div class="form-group">
+						<label>生成数量（填写数字即可）</label>
+						<input type="text" class="form-control" v-model='nums' placeholder="数量">
+					</div>
+
+					<div class="form-group">
+						<button type="button" v-on:click='generate' class="btn btn-success">点击生成</button>
+					</div>
+					<div class="form-group">
+						<button type="button" v-on:click='ok' class="btn btn-success">点击提交</button>
+					</div>
+
+					<div class="form-group">
+						<label>类型选择 {{type}} </label>
+
+						<div class="radio">
+							<label>
+								<input name="type" type="radio" value="0" v-model='type'> 加减法
+							</label>
+						</div>
+						<div class="radio">
+							<label>
+								<input name="type" type="radio" value="1" v-model='type'> 乘除法
+							</label>
+						</div>
+
+					</div>
+
+					<h1>
+						<span class="label label-success">对{{oknums}}</span>
+						<span class="label label-danger">错{{nonums}}</span>
+					</h1>
+
+				</div>
+			</div>
+		</div>
+
+		<div class="container">
+
+			<div class="panel panel-default">
+				<div class="panel-body">
+
+					<div class="col-md-3" id="box1">
+
+					</div>
+					<div class="col-md-3" id="box2">
+
+					</div>
+					<div class="col-md-3" id="box3">
+
+					</div>
+					<div class="col-md-3" id="box4">
+
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+		<div class="footer text-center">
+
+			由
+			<a href="">起源计划</a>
+			<a href="">萤火组</a>
+			提供技术支持
+
+		</div>
+
+		<div class="panel panel-default to-top">
+			<a href="#top">
+				<div class="panel-body">
+					<span class="glyphicon glyphicon-chevron-up"></span>
+				</div>
+			</a>
+		</div>
+
+		<script src="js/jquery-2.1.0.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/jquery-ui.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/vue.js" type="text/javascript" charset="utf-8"></script>
+
+		<script type="text/javascript">
+			var appname = new Vue({
+				el: '#appname',
+				data: {
+					username: '孙辉'
+				}
+			});
+
+			var JIA = 0; //加
+			var JIAN = 1; //减
+			var CHENG = 2; //乘
+			var CHU = 3; //除
+
+			var JIAJIAN = 0; //加减
+			var CHENGCHU = 1; //乘除
+
+			var topicArr = {};
+
+			var toolApp = new Vue({
+				el: '#tool',
+				data: {
+					max: 10,
+					nums: 100,
+					oknums: 0,
+					nonums: 0,
+					type: 0,
+				},
+				methods: {
+					generate: function() {
+						build();
+					},
+					ok: function() {
+						ok();
+					}
+
+				}
+			});
+
+			function ok() {
+				toolApp.oknums = 0;
+				toolApp.nonums = 0;
+				for(app in topicArr) {
+					//					console.log(topicArr[app].key);
+
+					topicArr[app].isok = false;
+					topicArr[app].isno = false;
+
+					if(topicArr[app].key == '' || topicArr[app].key == null) {
+						toolApp.nonums++;
+						topicArr[app].isno = true;
+
+					} else {
+
+						if(topicArr[app].key == topicArr[app].c) {
+
+							topicArr[app].isok = true;
+
+							toolApp.oknums++;
+
+						} else {
+							topicArr[app].isno = true;
+							toolApp.nonums++;
+
+						}
+					}
+
+				}
+			}
+
+			function build() {
+
+				var box1 = $('#box1');
+				var box2 = $('#box2');
+				var box3 = $('#box3');
+				var box4 = $('#box4');
+				box1.empty();
+				box2.empty();
+				box3.empty();
+				box4.empty();
+
+				topicArr = {};
+
+				for(var i = 1; i <= toolApp.nums; i++) {
+
+					var id = 'app' + i;
+
+					var group = getFormGroup(id);
+					var label = getLabel();
+					var inputText = getInput();
+
+					group.append(label);
+					group.append(inputText);
+
+					if(i <= 25) {
+						box1.append(group);
+					}
+
+					if(i > 25 && i <= 50) {
+						box2.append(group);
+					}
+
+					if(i > 50 && i <= 75) {
+						box3.append(group);
+					}
+					if(i > 75 && i <= 100) {
+						box4.append(group);
+					}
+
+					var app = new Vue({
+						el: '#' + id,
+						data: {
+							a: getRanDom(1, toolApp.max),
+							b: getRanDom(1, toolApp.max),
+							c: 0,
+							key: '',
+							type: getType(),
+							typeStr: '',
+							num: i,
+							isok: false,
+							isno: false,
+
+						}
+					});
+
+					buildApp(app);
+
+					topicArr[id] = app;
+
+				}
+
+			}
+
+			function buildApp(app) {
+
+				var a = parseInt(app.a);
+				var b = parseInt(app.b);
+
+				if(app.type == JIA) {
+					app.c = a + b;
+					app.typeStr = '+';
+				}
+
+				if(app.type == JIAN) {
+					app.c = a - b;
+					app.typeStr = '-';
+				}
+
+				if(app.type == CHENG) {
+					app.c = a * b;
+					app.typeStr = '×';
+				}
+
+				if(app.type == CHU) {
+					app.c = a / b;
+					app.typeStr = '÷';
+				}
+
+			}
+
+			function getInput() {
+				var inputText = $('<input />');
+				inputText.addClass('form-control');
+				inputText.attr('v-model', 'key');
+				inputText.attr('type', 'text');
+				//				inputText.css('width', '100px');
+				return inputText;
+			}
+
+			function getLabel() {
+				var label = $('<label></label>');
+				label.html('<span class="label label-default">{{num}}</span> <span class="label label-info"> {{a}}{{typeStr}}{{b}} =</span>  ');
+				label.addClass('control-label');
+				return label;
+			}
+
+			function getFormGroup(id) {
+
+				var group = $('<div></div>');
+				group.addClass('form-group');
+				group.attr('id', id);
+				group.attr('v-bind:class', "{ 'has-success':isok,'has-error':isno }");
+				group.css('margin-bottom', '10px');
+
+				return group;
+			}
+
+			function getType() {
+				var mod = getRanDom(1, 2);
+				if(toolApp.type == JIAJIAN) {
+
+					if(mod == 0) {
+						return JIA;
+					}
+					if(mod == 1) {
+						return JIAN;
+					}
+				}
+
+				if(toolApp.type == CHENGCHU) {
+					if(mod == 0) {
+						return CHENG;
+					}
+					if(mod == 1) {
+						return CHU;
+					}
+				}
+			}
+
+			function getRanDom(length, max) { //length 生成的随机数个数
+				//max 每个随机数的范围
+
+				var length = parseInt(length);
+				var max = parseInt(max);
+
+				var num = '';
+				for(var i = 1; i <= length; i++) {
+					num += parseInt(Math.random() * max);
+				}
+				return num;
+			}
+		</script>
+
+	</body>
+
+</html>
