@@ -164,14 +164,19 @@
 
 				for(x in topicGroup) {
 
+					topicGroup[x].isFlase = false;
+					topicGroup[x].isTrue = false;
+
 					if(parseInt(topicGroup[x].userc) == parseInt(topicGroup[x].c)) {
 
 						topicTool.trues++;
 						topicGroup[x].isTrue = true;
+
 					} else {
 
 						topicTool.falses++;
 						topicGroup[x].isFlase = true;
+
 					}
 
 				}
