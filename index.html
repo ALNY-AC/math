@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 
 	<head>
 		<meta charset="UTF-8">
-		<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-		<title>math</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
 		<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+		<link rel="stylesheet" type="text/css" href="css/font-awesome.min.css" />
+		<title>数学题生成器</title>
 		<style type="text/css">
 			.has-success .form-control {
 				/*background-color: #5cb85c;*/
@@ -31,87 +33,86 @@
 			.to-top span {
 				padding: 5px;
 			}
+			
+			body {
+				display: none;
+			}
 		</style>
+
 	</head>
 
 	<body>
+		<span id="top"></span>
 
-		<span id="top">
-		</span>
 		<div class="container">
 			<div class="panel panel-default">
-				<div class="panel-heading">控制台</div>
-				<div class="panel-body" id="tool">
+				<div class="panel-heading">
+					<h3 class="panel-title">生成器控制台</h3>
+				</div>
+				<div class="panel-body" id="topicTool">
 
-					<div class="form-group">
-						<label>生成范围（只需要填写最大数，比如1到100内的加减法，填写100即可）</label>
-						<input type="text" class="form-control" v-model='max' placeholder="范围">
-					</div>
-					<div class="form-group">
-						<label>生成数量（填写数字即可）</label>
-						<input type="text" class="form-control" v-model='nums' placeholder="数量">
-					</div>
+					<form class="form-inline">
+						<div class="form-group ">
+							<label>生成题目数量</label>
+							<input type="text" v-model='topicNum' class="form-control input-lg">
+						</div>
+						<div class="form-group">
+							<label>生成题目范围</label>
+							<input type="text" v-model='topicRange' class="form-control input-lg">
+						</div>
 
-					<div class="form-group">
-						<button type="button" v-on:click='generate' class="btn btn-success">点击生成</button>
-					</div>
-					<div class="form-group">
-						<button type="button" v-on:click='ok' class="btn btn-success">点击提交</button>
-					</div>
-
-					<div class="form-group">
-						<label>类型选择 {{type}} </label>
+					</form>
+					<hr />
+					<form>
+						<label>选择题目类型</label>
 
 						<div class="radio">
 							<label>
-								<input name="type" type="radio" value="0" v-model='type'> 加减法
+								<input type="radio" v-model='topicType' value="jiajian" checked>加减法
 							</label>
 						</div>
 						<div class="radio">
 							<label>
-								<input name="type" type="radio" value="1" v-model='type'> 乘除法
+								<input type="radio" v-model='topicType' value="chengchu">乘除法
 							</label>
 						</div>
 
-					</div>
+					</form>
+					<hr />
+					<p>
+						<button type="button" v-on:click='topicBuild' class="btn btn-danger btn-lg">开始生成</button>
+					</p>
 
-					<h1>
-						<span class="label label-success">对{{oknums}}</span>
-						<span class="label label-danger">错{{nonums}}</span>
-					</h1>
+					<p>
+						<button type="button" v-on:click='topicPost' class="btn btn-success btn-lg">提交题目</button>
+					</p>
+
+					<hr />
+					<div class="checkbox">
+						<label>
+							<input type="checkbox" v-model='isDebug'> 调试模式
+						</label>
+					</div>
+					<h2>
+						<span class="label label-success">对：{{trues}}</span>
+						<span class="label label-danger">错：{{falses}}</span>
+					</h2>
 
 				</div>
 			</div>
-		</div>
-
-		<div class="container">
 
 			<div class="panel panel-default">
 				<div class="panel-body">
 
-					<div class="col-md-3" id="box1">
-
-					</div>
-					<div class="col-md-3" id="box2">
-
-					</div>
-					<div class="col-md-3" id="box3">
-
-					</div>
-					<div class="col-md-3" id="box4">
-
+					<div class="row" id="topicBox">
+						<div class="col-md-3"></div>
+						<div class="col-md-3"></div>
+						<div class="col-md-3"></div>
+						<div class="col-md-3"></div>
 					</div>
 
 				</div>
 			</div>
-		</div>
-
-		<div class="footer text-center">
-
-			由
-			<a href="">起源计划</a>
-			<a href="">萤火组</a>
-			提供技术支持
 
 		</div>
 
@@ -125,223 +126,216 @@
 
 		<script src="js/jquery-2.1.0.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
-		<script src="js/jquery-ui.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/jquery-ui.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/vue.js" type="text/javascript" charset="utf-8"></script>
 
 		<script type="text/javascript">
-			var appname = new Vue({
-				el: '#appname',
+			var topicGroup = {}; //题目组
+
+			var topicTool = new Vue({
+				el: '#topicTool', //控制台id
 				data: {
-					username: '孙辉'
-				}
-			});
-
-			var JIA = 0; //加
-			var JIAN = 1; //减
-			var CHENG = 2; //乘
-			var CHU = 3; //除
-
-			var JIAJIAN = 0; //加减
-			var CHENGCHU = 1; //乘除
-
-			var topicArr = {};
-
-			var toolApp = new Vue({
-				el: '#tool',
-				data: {
-					max: 10,
-					nums: 100,
-					oknums: 0,
-					nonums: 0,
-					type: 0,
+					topicNum: 20, //题目数量
+					topicRange: 10, //题目范围
+					trues: 0, //正确题目数量
+					falses: 0, //错误题目数量
+					topicType: 'jiajian', //题目类型
+					isDebug: false
 				},
 				methods: {
-					generate: function() {
-						build();
+					topicBuild: function() {
+						//生成题目
+						topicBuild();
 					},
-					ok: function() {
-						ok();
+					topicPost: function() {
+						//提交题目
+						topicPost();
 					}
-
 				}
 			});
 
-			function ok() {
-				toolApp.oknums = 0;
-				toolApp.nonums = 0;
-				for(app in topicArr) {
-					//					console.log(topicArr[app].key);
+			$('body').show();
+			console.log(0 == 0);
 
-					topicArr[app].isok = false;
-					topicArr[app].isno = false;
+			function topicPost() {
 
-					if(topicArr[app].key == '' || topicArr[app].key == null) {
-						toolApp.nonums++;
-						topicArr[app].isno = true;
+				topicTool.trues = 0;
+				topicTool.falses = 0;
 
+				for(x in topicGroup) {
+
+					if(parseInt(topicGroup[x].userc) == parseInt(topicGroup[x].c)) {
+
+						topicTool.trues++;
+						topicGroup[x].isTrue = true;
 					} else {
 
-						if(topicArr[app].key == topicArr[app].c) {
-
-							topicArr[app].isok = true;
-
-							toolApp.oknums++;
-
-						} else {
-							topicArr[app].isno = true;
-							toolApp.nonums++;
-
-						}
+						topicTool.falses++;
+						topicGroup[x].isFlase = true;
 					}
 
 				}
+
 			}
 
-			function build() {
+			function topicBuild() {
+				$('#topicBox').empty(); //添加到页面
+				for(var i = 1; i <= topicTool.topicNum; i++) {
+					//生成题目数量的循环
+					buildElement(i); //装载组件
 
-				var box1 = $('#box1');
-				var box2 = $('#box2');
-				var box3 = $('#box3');
-				var box4 = $('#box4');
-				box1.empty();
-				box2.empty();
-				box3.empty();
-				box4.empty();
+					var id = '#topic' + i;
 
-				topicArr = {};
-
-				for(var i = 1; i <= toolApp.nums; i++) {
-
-					var id = 'app' + i;
-
-					var group = getFormGroup(id);
-					var label = getLabel();
-					var inputText = getInput();
-
-					group.append(label);
-					group.append(inputText);
-
-					if(i <= 25) {
-						box1.append(group);
-					}
-
-					if(i > 25 && i <= 50) {
-						box2.append(group);
-					}
-
-					if(i > 50 && i <= 75) {
-						box3.append(group);
-					}
-					if(i > 75 && i <= 100) {
-						box4.append(group);
-					}
-
-					var app = new Vue({
-						el: '#' + id,
+					var topicApp = new Vue({
+						el: id, //题目id
 						data: {
-							a: getRanDom(1, toolApp.max),
-							b: getRanDom(1, toolApp.max),
+							number: i, //题号
+							a: getRanDom(1, topicTool.topicRange),
+							b: getRanDom(1, topicTool.topicRange),
 							c: 0,
-							key: '',
+							userc: '',
 							type: getType(),
-							typeStr: '',
-							num: i,
-							isok: false,
-							isno: false,
+							typeTitle: '',
+							isTrue: false,
+							isFlase: false,
 
-						}
+						},
 					});
 
-					buildApp(app);
+					buildApp(topicApp);
+					topicGroup[id] = topicApp;
+				}
 
-					topicArr[id] = app;
+			}
+
+			function buildApp(topicApp) {
+				//=========================
+				//计算题目答案
+				var a = parseInt(topicApp.a);
+				var b = parseInt(topicApp.b);
+
+				switch(topicApp.type) {
+					case 'jia':
+
+						topicApp.c = a + b;
+						topicApp.typeTitle = '+';
+						break;
+					case 'jian':
+
+						topicApp.c = a - b;
+						topicApp.typeTitle = '-';
+						break;
+					case 'cheng':
+
+						topicApp.c = a * b;
+						topicApp.typeTitle = '*';
+						break;
+					case 'chu':
+
+						topicApp.c = a / b;
+						topicApp.typeTitle = '÷';
+						break;
+				}
+
+				if(topicTool.isDebug == true) {
+
+					topicApp.userc = topicApp.c;
 
 				}
 
 			}
 
-			function buildApp(app) {
+			function buildElement(number) {
 
-				var a = parseInt(app.a);
-				var b = parseInt(app.b);
+				//=========================
+				//装载控件 
+				var col = getCol(); //栅格
+				var FormGroup = getFormGroup(number); //表单容器
+				var TitleLabel = getTitleLabel(); //题目标题
+				var Input = getInput(); //输入控件
 
-				if(app.type == JIA) {
-					app.c = a + b;
-					app.typeStr = '+';
-				}
+				col.append(FormGroup); //栅格添加表单容器
+				FormGroup.append(TitleLabel);
+				FormGroup.append(Input);
 
-				if(app.type == JIAN) {
-					app.c = a - b;
-					app.typeStr = '-';
-				}
+				$('#topicBox').append(col); //添加到页面
 
-				if(app.type == CHENG) {
-					app.c = a * b;
-					app.typeStr = '×';
-				}
+			}
 
-				if(app.type == CHU) {
-					app.c = a / b;
-					app.typeStr = '÷';
-				}
+			function getCol() { //获得栅格
+				var col = $('<div></div>');
+				col.addClass('col-md-3');
+				return col;
+			}
+
+			function getFormGroup(number) {
+
+				var group = $('<div></div>');
+				group.addClass('form-group ');
+				group.attr('id', 'topic' + number);
+				group.attr('v-bind:class', "{ 'has-success':isTrue,'has-error':isFlase }");
+				return group;
+
+			}
+
+			function getTitleLabel() {
+				//获得题目标题
+
+				var label = $('<label></label>'); //标题的容器
+
+				var numberSpan = $('<span></span>'); //题号
+				numberSpan.addClass('label label-default');
+				numberSpan.text('{{number}}');
+
+				var titleSpan = $('<span></span>'); //题目
+				titleSpan.addClass('label label-info');
+				titleSpan.text('{{a}} {{typeTitle}} {{b}}=');
+
+				//==========================
+
+				label.append(numberSpan);
+				label.append(titleSpan);
+
+				return label;
 
 			}
 
 			function getInput() {
-				var inputText = $('<input />');
-				inputText.addClass('form-control');
-				inputText.attr('v-model', 'key');
-				inputText.attr('type', 'text');
-				//				inputText.css('width', '100px');
-				return inputText;
-			}
+				//获得输入控件
 
-			function getLabel() {
-				var label = $('<label></label>');
-				label.html('<span class="label label-default">{{num}}</span> <span class="label label-info"> {{a}}{{typeStr}}{{b}} =</span>  ');
-				label.addClass('control-label');
-				return label;
-			}
+				var Input = $('<input />');
+				Input.addClass('form-control');
+				Input.attr('v-model', 'userc');
+				Input.attr('type', 'text');
 
-			function getFormGroup(id) {
-
-				var group = $('<div></div>');
-				group.addClass('form-group');
-				group.attr('id', id);
-				group.attr('v-bind:class', "{ 'has-success':isok,'has-error':isno }");
-				group.css('margin-bottom', '10px');
-
-				return group;
+				return Input;
 			}
 
 			function getType() {
 				var mod = getRanDom(1, 2);
-				if(toolApp.type == JIAJIAN) {
-
+				if(topicTool.topicType == 'jiajian') {
 					if(mod == 0) {
-						return JIA;
+						return 'jia';
 					}
 					if(mod == 1) {
-						return JIAN;
+						return 'jian';
 					}
 				}
-
-				if(toolApp.type == CHENGCHU) {
+				if(topicTool.topicType == 'chengchu') {
 					if(mod == 0) {
-						return CHENG;
+						return 'cheng';
 					}
 					if(mod == 1) {
-						return CHU;
+						return 'chu';
 					}
 				}
 			}
+			//====================================
 
 			function getRanDom(length, max) { //length 生成的随机数个数
 				//max 每个随机数的范围
-
 				var length = parseInt(length);
 				var max = parseInt(max);
-
 				var num = '';
 				for(var i = 1; i <= length; i++) {
 					num += parseInt(Math.random() * max);
