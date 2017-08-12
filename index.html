@@ -38,7 +38,7 @@
 				display: none;
 			}
 		</style>
-
+		-
 	</head>
 
 	<body>
@@ -79,14 +79,8 @@
 
 					</form>
 					<hr />
-					<p>
-						<button type="button" v-on:click='topicBuild' class="btn btn-danger btn-lg">开始生成</button>
-					</p>
-
-					<p>
-						<button type="button" v-on:click='topicPost' class="btn btn-success btn-lg">提交题目</button>
-					</p>
-
+					<button type="button" v-on:click='topicPost' class="btn btn-success btn-lg">提交题目</button>
+					<button type="button" v-on:click='topicBuild' class="btn btn-danger btn-lg">开始生成</button>
 					<hr />
 					<!--<div class="checkbox">
 						<label>
@@ -96,7 +90,12 @@
 					<h2>
 						<span class="label label-success">对：{{trues}}</span>
 						<span class="label label-danger">错：{{falses}}</span>
+
 					</h2>
+
+					<h1>
+						<span style="color: #000;font-size: 60px;">{{time_h}}:{{time_m}}:{{time_s}}</span>
+					</h1>
 
 				</div>
 			</div>
@@ -140,19 +139,47 @@
 					trues: 0, //正确题目数量
 					falses: 0, //错误题目数量
 					topicType: 'jiajian', //题目类型
-					isDebug: false
+					isDebug: false,
+					time_s: 0,
+					time_m: 0,
+					time_h: 0,
 				},
 				methods: {
 					topicBuild: function() {
 						//生成题目
 						topicBuild();
+						goTime();
 					},
 					topicPost: function() {
 						//提交题目
+						endTime();
 						topicPost();
 					}
 				}
 			});
+
+			var timeTimout;
+
+			function goTime() {
+
+				timeTimout = setInterval(function() {
+					topicTool.time_s++;
+					if(topicTool.time_s >= 60) {
+						topicTool.time_s = 0;
+						topicTool.time_m++;
+					}
+					if(topicTool.time_m >= 60) {
+						topicTool.time_m = 0;
+						topicTool.time_h++;
+					}
+
+				}, 1000)
+
+			}
+
+			function endTime() {
+				clearInterval(timeTimout);
+			}
 
 			$('body').show();
 			console.log(0 == 0);
