@@ -9,12 +9,23 @@
 		<link rel="stylesheet" type="text/css" href="css/font-awesome.min.css" />
 		<title>数学题生成器</title>
 		<style type="text/css">
+			* {
+				/*font-family: "微软雅黑";*/
+			}
+			
+			body {
+				padding: 0;
+				margin: 0;
+				display: none;
+			}
+			
 			.has-success .form-control {
 				/*background-color: #5cb85c;*/
 			}
 			
 			.has-error .form-control {
 				background-color: #d9534f;
+				color: #fff;
 			}
 			
 			.to-top {
@@ -33,18 +44,13 @@
 			.to-top span {
 				padding: 5px;
 			}
-			
-			body {
-				display: none;
-			}
 		</style>
-		-
 	</head>
 
 	<body>
 		<span id="top"></span>
-
 		<div class="container">
+
 			<div class="panel panel-default">
 				<div class="panel-heading">
 					<h3 class="panel-title">生成器控制台</h3>
@@ -60,27 +66,25 @@
 							<label>生成题目范围</label>
 							<input type="text" v-model='topicRange' class="form-control input-lg">
 						</div>
-
 					</form>
 					<hr />
-					<form>
-						<label>选择题目类型</label>
+					<label>选择题目类型</label>
 
-						<div class="radio">
-							<label>
-								<input type="radio" v-model='topicType' value="jiajian" checked>加减法
-							</label>
-						</div>
-						<div class="radio">
-							<label>
-								<input type="radio" v-model='topicType' value="chengchu">乘除法
-							</label>
-						</div>
-
-					</form>
+					<div class="radio">
+						<label>
+							<input type="radio" v-model='topicType' value="jiajian" checked>加减法
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" v-model='topicType' value="chengchu">乘除法
+						</label>
+					</div>
 					<hr />
+
 					<button type="button" v-on:click='topicPost' class="btn btn-success btn-lg">提交题目</button>
 					<button type="button" v-on:click='topicBuild' class="btn btn-danger btn-lg">开始生成</button>
+
 					<hr />
 					<!--<div class="checkbox">
 						<label>
@@ -100,7 +104,7 @@
 				</div>
 			</div>
 
-			<div class="panel panel-default">
+			<div class="panel panel-default" id="panelBox">
 				<div class="panel-body">
 
 					<div class="row" id="topicBox">
