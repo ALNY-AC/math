@@ -131,6 +131,7 @@
 		<script type="text/javascript">
 			var topicGroup = {}; //题目组
 
+			//题目工具
 			var topicTool = new Vue({
 				el: '#topicTool', //控制台id
 				data: {
@@ -147,62 +148,80 @@
 				methods: {
 					topicBuild: function() {
 						//生成题目
-						topicBuild();
-						goTime();
+						topicBuild(); //构建题目
+						endTime(); //结束时间
+						startTime(); //开始时间
 					},
 					topicPost: function() {
 						//提交题目
-						endTime();
-						topicPost();
+						endTime(); //结束时间
+						topicPost(); //提交题目
 					}
 				}
 			});
 
-			var timeTimout;
+			var timeTimout = null; //计时器句柄
 
-			function goTime() {
+			//开始计时器函数
+			function startTime() {
+				//开始时间，1秒循环
+				//初始化时间
 
-				timeTimout = setInterval(function() {
-					topicTool.time_s++;
-					if(topicTool.time_s >= 60) {
-						topicTool.time_s = 0;
-						topicTool.time_m++;
-					}
-					if(topicTool.time_m >= 60) {
-						topicTool.time_m = 0;
-						topicTool.time_h++;
-					}
+				if(timeTimout === null) {
+					topicTool.time_s = 0;
+					topicTool.time_m = 0;
+					topicTool.time_h = 0;
 
-				}, 1000)
+					timeTimout = setInterval(function() {
+						topicTool.time_s++; //秒++
+						if(topicTool.time_s >= 60) {
+							//如果秒大于或等于60
+							topicTool.time_s = 0; //秒=0
+							topicTool.time_m++; //分++
+						}
+						if(topicTool.time_m >= 60) {
+							//如果分大于等于60
+							topicTool.time_m = 0; //分=0
+							topicTool.time_h++; //时++
+						}
+
+					}, 1000)
+				}
 
 			}
 
+			//结束计时器函数
 			function endTime() {
+
 				clearInterval(timeTimout);
+				timeTimout = null; //计时器句柄
+
 			}
 
-			$('body').show();
-			console.log(0 == 0);
+			$('body').show(); //手动显示body，因为vue加载之前页面不友好
 
+			//提交题目函数
 			function topicPost() {
 
-				topicTool.trues = 0;
-				topicTool.falses = 0;
+				topicTool.trues = 0; //初始化正确题目数量
+				topicTool.falses = 0; //初始化错误题目数量
 
+				//循环题目集合
 				for(x in topicGroup) {
 
-					topicGroup[x].isTrue = false;
-					topicGroup[x].isFlase = false;
+					topicGroup[x].isTrue = false; //初始化是否正确为false
+					topicGroup[x].isFlase = false; //初始化是否错误为false
 
+					//判断用户输入（userc）是否等于系统（c）答案
 					if(parseInt(topicGroup[x].userc) == parseInt(topicGroup[x].c)) {
-
-						topicTool.trues++;
-						topicGroup[x].isTrue = true;
+						//如果题目正确
+						topicTool.trues++; //正确计数++
+						topicGroup[x].isTrue = true; //设置此题正确，和css挂钩
 
 					} else {
-
-						topicTool.falses++;
-						topicGroup[x].isFlase = true;
+						//如果错误
+						topicTool.falses++; //错误计数++
+						topicGroup[x].isFlase = true; //设置此题错误，和css挂钩
 
 					}
 
@@ -210,65 +229,73 @@
 
 			}
 
+			//构建题目函数
 			function topicBuild() {
-				$('#topicBox').empty(); //添加到页面
-				for(var i = 1; i <= topicTool.topicNum; i++) {
-					//生成题目数量的循环
-					buildElement(i); //装载组件
+				$('#topicBox').empty(); //清空题目容器
 
+				//生成题目数量的循环
+				for(var i = 1; i <= topicTool.topicNum; i++) {
+					//装载组件
+					buildElement(i);
+
+					//设置题目的id变量
 					var id = '#topic' + i;
 
+					//创建vue-app
 					var topicApp = new Vue({
 						el: id, //题目id
 						data: {
 							number: i, //题号
-							a: getRanDom(1, topicTool.topicRange),
-							b: getRanDom(1, topicTool.topicRange),
-							c: 0,
-							userc: '',
-							type: getType(),
-							typeTitle: '',
-							isTrue: false,
-							isFlase: false,
-
+							a: getRanDom(1, topicTool.topicRange), //随机生成a
+							b: getRanDom(1, topicTool.topicRange), //随机生成b
+							c: 0, //答案
+							userc: '', //用户输入的答案
+							type: getType(), //获得题目类型
+							typeTitle: '', //类别标题，比如+-*/
+							isTrue: false, //此题是否正确，和css挂钩
+							isFlase: false, //此题是否错误，和css挂钩
 						},
 					});
 
+					//构建题目app
 					buildApp(topicApp);
+					//将此题目加入到数组中
 					topicGroup[id] = topicApp;
 				}
 
 			}
 
+			//构建题目app
 			function buildApp(topicApp) {
-				//=========================
-				//计算题目答案
+				//取得题目a值
 				var a = parseInt(topicApp.a);
+				//取得题目b值
 				var b = parseInt(topicApp.b);
 
+				//通过题目类型来识别
 				switch(topicApp.type) {
 					case 'jia':
-
+						//加法
 						topicApp.c = a + b;
 						topicApp.typeTitle = '+';
 						break;
 					case 'jian':
-
+						//减法
 						topicApp.c = a - b;
 						topicApp.typeTitle = '-';
 						break;
 					case 'cheng':
-
+						//乘法
 						topicApp.c = a * b;
 						topicApp.typeTitle = '*';
 						break;
 					case 'chu':
-
+						//除法
 						topicApp.c = a / b;
 						topicApp.typeTitle = '÷';
 						break;
 				}
-
+				// 如果测试选项被勾选，就直接将系统答案赋值给用户答案
 				if(topicTool.isDebug == true) {
 
 					topicApp.userc = topicApp.c;
@@ -277,95 +304,127 @@
 
 			}
 
+			//装载页面组件函数
 			function buildElement(number) {
-
-				//=========================
-				//装载控件 
-				var col = getCol(); //栅格
-				var FormGroup = getFormGroup(number); //表单容器
-				var TitleLabel = getTitleLabel(); //题目标题
-				var Input = getInput(); //输入控件
-
-				col.append(FormGroup); //栅格添加表单容器
+				//获取栅格div
+				var col = getCol(3);
+				//获取表单容器div
+				var FormGroup = getFormGroup(number);
+				//获取题目标题label
+				var TitleLabel = getTitleLabel();
+				//获取表单控件
+				var Input = getInput();
+				//将id添加到表单容器中
+				FormGroup.attr('id', 'topic' + number);
+				//栅格添加表单容器中
+				col.append(FormGroup);
+				//将题目标签添加到表单容器中
 				FormGroup.append(TitleLabel);
+				//将表单控件添加到表单容器中
 				FormGroup.append(Input);
-
-				$('#topicBox').append(col); //添加到页面
-
+				//将栅格添加到题目容器中 
+				$('#topicBox').append(col);
 			}
 
-			function getCol() { //获得栅格
+			//获得栅格函数
+			function getCol(num) {
+				//创建栅格div
 				var col = $('<div></div>');
-				col.addClass('col-md-3');
+				//给栅格添加class，通过num来确定栅格的级别
+				col.addClass('col-md-' + num);
+				//返回栅格
 				return col;
 			}
 
-			function getFormGroup(number) {
+			//	获得表单容器函数
+			function getFormGroup() {
 
+				//创建表单容器
 				var group = $('<div></div>');
-				group.addClass('form-group ');
-				group.attr('id', 'topic' + number);
+				//添加class
+				group.addClass('form-group');
+				//添加vue属性
 				group.attr('v-bind:class', "{ 'has-success':isTrue,'has-error':isFlase }");
+				//返回表单容器
 				return group;
 
 			}
 
+			//获得题目标题标签函数
 			function getTitleLabel() {
-				//获得题目标题
-
-				var label = $('<label></label>'); //标题的容器
-
-				var numberSpan = $('<span></span>'); //题号
+				//标题的容器
+				var label = $('<label></label>');
+				//题号容器span
+				var numberSpan = $('<span></span>');
+				//添加class
 				numberSpan.addClass('label label-default');
+				//设置文本内容为vue模板语法
 				numberSpan.text('{{number}}');
 
-				var titleSpan = $('<span></span>'); //题目
+				//题目span容器
+				var titleSpan = $('<span></span>');
+				//添加class
 				titleSpan.addClass('label label-info');
+				//设置文本内容为vue模板语法
 				titleSpan.text('{{a}} {{typeTitle}} {{b}}=');
 
 				//==========================
-
+				//将题号span添加到标题容器中
 				label.append(numberSpan);
+				//将题目span添加到标题容器中
 				label.append(titleSpan);
-
+				//返回题目容器标签
 				return label;
 
 			}
-
+			//获得表单控件
 			function getInput() {
-				//获得输入控件
-
+				//表单
 				var Input = $('<input />');
+				//添加class
 				Input.addClass('form-control');
+				//添加vue属性
 				Input.attr('v-model', 'userc');
+				//设置表单类型
 				Input.attr('type', 'text');
-
+				//返回表单
 				return Input;
 			}
 
+			//随机生成题目类型并返回
 			function getType() {
+				//设置随机数种子
 				var mod = getRanDom(1, 2);
+				//如果题目是加减类型的
 				if(topicTool.topicType == 'jiajian') {
+					//如果随机数是0，就设置返回类型为加
 					if(mod == 0) {
+
 						return 'jia';
 					}
+					//如果随机数是1，就设置返回类型为减
 					if(mod == 1) {
 						return 'jian';
 					}
 				}
+				//如果题目是乘除类型的
 				if(topicTool.topicType == 'chengchu') {
+					//如果随机数是0，就设置返回类型为乘
 					if(mod == 0) {
 						return 'cheng';
 					}
+					//如果随机数是1，就设置返回类型为除
 					if(mod == 1) {
 						return 'chu';
 					}
 				}
 			}
 			//====================================
-
-			function getRanDom(length, max) { //length 生成的随机数个数
-				//max 每个随机数的范围
+			//length 生成的随机数个数
+			//max	生成的随机数最大值
+			//比如，参数为：3,10
+			//代表：随机数长度为3，范围是0-10
+			function getRanDom(length, max) {
 				var length = parseInt(length);
 				var max = parseInt(max);
 				var num = '';
